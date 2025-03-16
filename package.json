@@ -4,9 +4,17 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest"
+    "@eslint/js": "^9.22.0",
+    "@types/bun": "latest",
+    "eslint": "^9.22.0",
+    "globals": "^16.0.0",
+    "prettier": "3.5.3",
+    "typescript-eslint": "^8.26.1"
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "scripts": {
+    "dev": "bun src/index.ts"
   }
 }
