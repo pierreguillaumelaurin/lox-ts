@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as readline from "readline";
 import { Scanner } from "./Scanner";
 
-export class Lox {
+export default class Lox {
   private hadError: boolean;
 
   constructor() {
