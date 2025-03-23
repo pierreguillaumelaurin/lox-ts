@@ -6,6 +6,24 @@ export class Scanner {
   private errorHandler: ErrorHandler;
   private source = "";
   private tokens: Token[] = [];
+  private static keywords: ReadonlyMap<string, TokenType> = new Map([
+    ["and", TokenType.AND],
+    ["class", TokenType.CLASS],
+    ["else", TokenType.ELSE],
+    ["false", TokenType.FALSE],
+    ["for", TokenType.FOR],
+    ["fun", TokenType.FUN],
+    ["if", TokenType.IF],
+    ["nil", TokenType.NIL],
+    ["or", TokenType.OR],
+    ["print", TokenType.PRINT],
+    ["return", TokenType.RETURN],
+    ["super", TokenType.SUPER],
+    ["this", TokenType.THIS],
+    ["true", TokenType.TRUE],
+    ["var", TokenType.VAR],
+    ["while", TokenType.WHILE],
+  ]);
 
   private start = 0;
   private current = 0;
@@ -99,6 +117,8 @@ export class Scanner {
       default:
         if (c && Scanner.isDigit(c)) {
           this.number();
+        } else if (c && Scanner.isAlpha(c)) {
+          this.identifier();
         } else {
           this.errorHandler.error(this.line, "Unexpected character");
         }
@@ -132,6 +152,24 @@ export class Scanner {
     return this.current + 1 >= this.source.length
       ? "\0"
       : this.source[this.current + 1];
+  }
+
+  private identifier() {
+    let next = this.peek();
+    while (next && Scanner.isAlphaNumeric(next)) {
+      this.advance();
+      next = this.peek();
+    }
+    const text = this.source.substring(this.start, this.current);
+    const type = Scanner.keywords.get(text);
+    this.addToken(type ?? TokenType.IDENTIFIER);
+  }
+
+  private static isAlphaNumeric(c: string) {
+    return Scanner.isAlpha(c) || Scanner.isDigit(c);
+  }
+  private static isAlpha(c: string) {
+    return (c >= "a" && c <= "z") || (c >= "A" && c <= "Z") || c == "_";
   }
 
   private static isDigit(c: string) {
