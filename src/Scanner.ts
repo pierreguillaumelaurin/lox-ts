@@ -75,9 +75,90 @@ export class Scanner {
           this.match("=") ? TokenType.GREATER_EQUAL : TokenType.GREATER,
         );
         break;
+      case "/":
+        if (this.match("/")) {
+          // A comment goes until the end of the line.
+          while (this.peek() != "\n" && !this.isAtEnd()) {
+            this.advance();
+          }
+        } else {
+          this.addToken(SLASH);
+        }
+        break;
+      case " ":
+      case "\r":
+      case "\t":
+        // Ignore whitespace.
+        break;
+      case "\n":
+        this.line++;
+        break;
+      case '"':
+        this.string();
+        break;
       default:
-        this.errorHandler.error(this.line, "Unexpected character");
+        if (c && Scanner.isDigit(c)) {
+          this.number();
+        } else {
+          this.errorHandler.error(this.line, "Unexpected character");
+        }
     }
+  }
+
+  private number() {
+    let next = this.peek();
+    while (next && Scanner.isDigit(next)) {
+      this.advance();
+      next = this.peek();
+    }
+
+    if (next && Scanner.isDigit(this.peekPeek() as string)) {
+      this.advance();
+      next = this.peek();
+
+      while (next && Scanner.isDigit(next)) {
+        this.advance();
+        next = this.peek();
+      }
+    }
+
+    this.addToken(
+      TokenType.NUMBER,
+      parseFloat(this.source.substring(this.start, this.current)),
+    );
+  }
+
+  private peekPeek() {
+    return this.current + 1 >= this.source.length
+      ? "\0"
+      : this.source[this.current + 1];
+  }
+
+  private static isDigit(c: string) {
+    return c >= "0" && c <= "9";
+  }
+
+  private string() {
+    while (this.peek() != '"' && !this.isAtEnd()) {
+      if (this.peek() == "\n") {
+        this.line++;
+      }
+      this.advance();
+    }
+
+    if (this.isAtEnd()) {
+      this.errorHandler.error(this.line, "Unterminated string.");
+      return;
+    }
+
+    this.advance();
+
+    const value = this.source.substring(this.start + 1, this.current - 1);
+    this.addToken(TokenType.STRING, value);
+  }
+
+  private peek() {
+    return this.isAtEnd() ? "\0" : this.source[this.current];
   }
 
   private match(expected: string) {
