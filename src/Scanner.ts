@@ -1,7 +1,9 @@
 import type { Token } from "Token";
 import TokenType from "TokenType";
+import ErrorHandler from "ErrorHandler";
 
 export class Scanner {
+  private errorHandler: ErrorHandler;
   private source = "";
   private tokens: Token[] = [];
 
@@ -9,8 +11,9 @@ export class Scanner {
   private current = 0;
   private line = 1;
 
-  constructor(source: string) {
+  constructor(source: string, errorHandler: ErrorHandler) {
     this.source = source;
+    this.errorHandler = errorHandler;
   }
 
   scanTokens(): Token[] {
@@ -56,6 +59,8 @@ export class Scanner {
       case "*":
         this.addToken(TokenType.STAR);
         break;
+      default:
+        this.errorHandler.error(this.line, "Unexpected character");
     }
   }
 

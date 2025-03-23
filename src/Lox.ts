@@ -1,12 +1,14 @@
 import * as fs from "fs";
 import * as readline from "readline";
 import { Scanner } from "./Scanner";
+import type { Token } from "Token";
+import ErrorHandler from "ErrorHandler";
 
 export default class Lox {
-  private hadError: boolean;
+  private errorHandler: ErrorHandler;
 
   constructor() {
-    this.hadError = false;
+    this.errorHandler = new ErrorHandler();
   }
 
   main(args: string[]) {
@@ -41,7 +43,7 @@ export default class Lox {
 
     rl.on("line", (line) => {
       this.run(line);
-      this.hadError = false;
+      this.errorHandler.hadError = false;
       rl.prompt();
     }).on("close", () => {
       console.log("Goodbye!");
@@ -50,27 +52,10 @@ export default class Lox {
   }
 
   private run(source: string): void {
-    const scanner = Scanner(source);
+    const scanner = new Scanner(source, this.errorHandler);
     const tokens = scanner.scanTokens();
     tokens.forEach((token: Token) => {
       console.log(token);
     });
-  }
-
-  error(line: number, message: string) {
-    this.report({ line, message });
-  }
-
-  private report({
-    line,
-    where,
-    message,
-  }: {
-    line: number;
-    message: string;
-    where?: string;
-  }) {
-    console.error(`[line ${line}] Error ${where}: ${message}`);
-    this.hadError = true;
   }
 }
