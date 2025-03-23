@@ -6,24 +6,24 @@ export class Scanner {
   private errorHandler: ErrorHandler;
   private source = "";
   private tokens: Token[] = [];
-  private static keywords: ReadonlyMap<string, TokenType> = new Map([
-    ["and", TokenType.AND],
-    ["class", TokenType.CLASS],
-    ["else", TokenType.ELSE],
-    ["false", TokenType.FALSE],
-    ["for", TokenType.FOR],
-    ["fun", TokenType.FUN],
-    ["if", TokenType.IF],
-    ["nil", TokenType.NIL],
-    ["or", TokenType.OR],
-    ["print", TokenType.PRINT],
-    ["return", TokenType.RETURN],
-    ["super", TokenType.SUPER],
-    ["this", TokenType.THIS],
-    ["true", TokenType.TRUE],
-    ["var", TokenType.VAR],
-    ["while", TokenType.WHILE],
-  ]);
+  private static keywords: Readonly<{ [key: string]: TokenType }> = {
+    and: TokenType.AND,
+    class: TokenType.CLASS,
+    else: TokenType.ELSE,
+    false: TokenType.FALSE,
+    for: TokenType.FOR,
+    fun: TokenType.FUN,
+    if: TokenType.IF,
+    nil: TokenType.NIL,
+    or: TokenType.OR,
+    print: TokenType.PRINT,
+    return: TokenType.RETURN,
+    super: TokenType.SUPER,
+    this: TokenType.THIS,
+    true: TokenType.TRUE,
+    var: TokenType.VAR,
+    while: TokenType.WHILE,
+  };
 
   private start = 0;
   private current = 0;
@@ -161,7 +161,7 @@ export class Scanner {
       next = this.peek();
     }
     const text = this.source.substring(this.start, this.current);
-    const type = Scanner.keywords.get(text);
+    const type = Scanner.keywords[text];
     this.addToken(type ?? TokenType.IDENTIFIER);
   }
 
