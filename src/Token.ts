@@ -3,6 +3,6 @@ import TokenType from "./TokenType";
 export type Token = {
   type: TokenType;
   lexeme: string;
-  literal: unknown; // TODO fix unknown
+  literal: unknown;
   line: number;
 };
