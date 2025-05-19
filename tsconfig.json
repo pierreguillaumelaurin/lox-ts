@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "baseUrl" : "./src",
+    "baseUrl": "./src",
     // Environment setup & latest features
     "lib": ["esnext"],
     "target": "ESNext",

@@ -15,6 +15,7 @@
     "typescript": "^5"
   },
   "scripts": {
-    "dev": "bun src/index.ts"
+    "dev": "bun src/index.ts",
+    "lint:fix": "bun run eslint --fix && bun run prettier . --check --write"
   }
 }
