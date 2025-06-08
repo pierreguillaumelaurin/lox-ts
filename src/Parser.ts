@@ -1,6 +1,6 @@
 import type { Expr, UnaryExpr } from "Ast";
 import ErrorHandler from "ErrorHandler";
-import type * as Token from "Token";
+import type { Token } from "Token";
 import TokenType from "TokenType";
 
 class Parser {
@@ -102,7 +102,17 @@ class Parser {
     this.error(this.peek(), message);
   }
 
-  private error() {}
+  private error(token: Token, message: string) {
+    switch (token.type) {
+      case TokenType.EOF:
+        this.errorHandler.error(token.line, ` at end ${message}`);
+        break;
+      default:
+        this.errorHandler.error(token.line, ` at '${token.lexeme}' ${message}`);
+    }
+
+    throw new Error("parse error");
+  }
 
   private match(...types: TokenType[]) {
     for (const type of types) {
