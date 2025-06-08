@@ -57,5 +57,12 @@ export default class Lox {
     tokens.forEach((token: Token) => {
       console.log(token);
     });
+
+    const parser = new Parser(tokens);
+    const expression = parser.parse();
+
+    if (this.errorHandler.hadError) {
+      return;
+    }
   }
 }

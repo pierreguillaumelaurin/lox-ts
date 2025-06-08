@@ -13,6 +13,14 @@ class Parser {
     this.errorHandler = new ErrorHandler();
   }
 
+  public parse() {
+    try {
+      return this.expression();
+    } catch (_error) {
+      return null;
+    }
+  }
+
   private expression() {
     return this.equality();
   }
@@ -94,6 +102,8 @@ class Parser {
       this.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
       return { type: "GroupingExpr", expr };
     }
+
+    throw this.error(this.peek(), "Expect expression.");
   }
 
   private consume(type: TokenType, message: string) {
@@ -112,6 +122,28 @@ class Parser {
     }
 
     throw new Error("parse error");
+  }
+
+  private synchronize() {
+    this.advance();
+
+    while (!this.isAtEnd()) {
+      if (this.previous().type === TokenType.SEMICOLON) return;
+
+      switch (this.peek().type) {
+        case TokenType.CLASS:
+        case TokenType.FUN:
+        case TokenType.VAR:
+        case TokenType.FOR:
+        case TokenType.IF:
+        case TokenType.WHILE:
+        case TokenType.PRINT:
+        case TokenType.RETURN:
+          return;
+      }
+
+      this.advance();
+    }
   }
 
   private match(...types: TokenType[]) {
