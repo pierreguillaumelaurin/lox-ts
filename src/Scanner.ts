@@ -100,7 +100,7 @@ export class Scanner {
             this.advance();
           }
         } else {
-          this.addToken(SLASH);
+          this.addToken(TokenType.SLASH);
         }
         break;
       case " ":

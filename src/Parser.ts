@@ -1,14 +1,16 @@
-import type { Expr, UnaryExpr } from "Ast";
+import type { Expr, UnaryExpr, LiteralExpr, GroupingExpr } from "Ast";
 import ErrorHandler from "ErrorHandler";
 import type { Token } from "Token";
 import TokenType from "TokenType";
 
+const EOF_TOKEN = { type: TokenType.EOF, lexeme: "", literal: null, line: 0 };
+
 class Parser {
-  private readonly tokens: Token.Token[];
+  private readonly tokens: Token[];
   private errorHandler: ErrorHandler;
   private current = 0;
 
-  constructor(tokens: Token.Token[]) {
+  constructor(tokens: Token[]) {
     this.tokens = tokens;
     this.errorHandler = new ErrorHandler();
   }
@@ -16,12 +18,12 @@ class Parser {
   public parse() {
     try {
       return this.expression();
-    } catch (_error) {
-      return null;
+    } catch (error) {
+      return error;
     }
   }
 
-  private expression() {
+  private expression(): Expr {
     return this.equality();
   }
 
@@ -78,10 +80,10 @@ class Parser {
     return expr;
   }
 
-  private unary() {
+  private unary(): Expr {
     if (this.match(TokenType.BANG, TokenType.MINUS)) {
       const operator = this.previous();
-      const right: UnaryExpr = this.unary();
+      const right: Expr = this.unary();
       return { type: "UnaryExpr", operator, right };
     }
 
@@ -90,17 +92,17 @@ class Parser {
 
   private primary() {
     if (this.match(TokenType.FALSE))
-      return { type: "LiteralExpr", value: false };
-    if (this.match(TokenType.TRUE)) return { type: "LiteralExpr", value: true };
-    if (this.match(TokenType.NIL)) return { type: "LiteralExpr", value: null };
+      return { type: "LiteralExpr", value: false } as LiteralExpr;
+    if (this.match(TokenType.TRUE)) return { type: "LiteralExpr", value: true } as LiteralExpr;
+    if (this.match(TokenType.NIL)) return { type: "LiteralExpr", value: null } as LiteralExpr;
 
     if (this.match(TokenType.NUMBER, TokenType.STRING))
-      return { type: "LiteralExpr", value: this.previous().literal };
+      return { type: "LiteralExpr", value: this.previous().literal } as LiteralExpr;
 
     if (this.match(TokenType.LEFT_PAREN)) {
       const expr = this.expression();
       this.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
-      return { type: "GroupingExpr", expr };
+      return { type: "GroupingExpr", expression: expr } as GroupingExpr;
     }
 
     throw this.error(this.peek(), "Expect expression.");
@@ -175,14 +177,12 @@ class Parser {
     return this.peek().type === TokenType.EOF;
   }
 
-  private peek() {
-    return this.tokens[this.current] ?? { type: TokenType.EOF, literal: null };
+  private peek(): Token {
+    return this.tokens[this.current] ?? EOF_TOKEN;
   }
 
-  private previous() {
-    return (
-      this.tokens[this.current - 1] ?? { type: TokenType.EOF, literal: null }
-    );
+  private previous(): Token {
+    return this.tokens[this.current - 1] ?? EOF_TOKEN;
   }
 }
 

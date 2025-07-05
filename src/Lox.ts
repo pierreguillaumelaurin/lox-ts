@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as readline from "readline";
 import { Scanner } from "./Scanner";
 import type { Token } from "Token";
+import Parser from "./Parser";
 import ErrorHandler from "ErrorHandler";
 
 export default class Lox {
