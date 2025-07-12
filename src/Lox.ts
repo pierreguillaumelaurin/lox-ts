@@ -55,13 +55,11 @@ export default class Lox {
   private run(source: string): void {
     const scanner = new Scanner(source, this.errorHandler);
     const tokens = scanner.scanTokens();
-    tokens.forEach((token: Token) => {
-      console.log(token);
-    });
 
     const parser = new Parser(tokens);
     const expression = parser.parse();
 
+    console.log(expression);
     if (this.errorHandler.hadError) {
       return;
     }
