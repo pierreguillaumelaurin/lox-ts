@@ -5,10 +5,28 @@ import type {
   LiteralExpr,
   UnaryExpr,
 } from "Ast";
+import Lox from "Lox";
+import RuntimeError from "RuntimeError";
+import type { Token } from "Token";
 import TokenType from "TokenType";
 import { assertUnreachable } from "utils";
 
 export class Interpreter {
+  interpret(expr: Expr) {
+    try {
+      const value = this.evaluate(expr);
+      console.log(this.stringify(value));
+    } catch (error) {
+      if (error instanceof RuntimeError) {
+        Lox.runtimeError(error);
+      }
+    }
+  }
+
+  private stringify(value: unknown) {
+    return value == null ? "nil" : value.toString();
+  }
+
   visitLitteralExpr(expr: LiteralExpr) {
     return expr.value;
   }
@@ -21,6 +39,7 @@ export class Interpreter {
 
     switch (expr.operator.type) {
       case TokenType.MINUS:
+        this.checkNumberOperand(expr.operator.type, expr.right);
         return -right;
       case TokenType.BANG:
         return !this.isTruthy(right);
@@ -28,12 +47,19 @@ export class Interpreter {
         assertUnreachable(expr.operator.type);
     }
   }
+
+  checkNumberOperand(operator: TokenType, operand: unknown) {
+    if (typeof operand === "number") return;
+    throw new RuntimeError(`${operator} operands must be a number`);
+  }
+
   visitBinaryExpr(expr: BinaryExpr) {
     const left = this.evaluate(expr.left);
     const right = this.evaluate(expr.right);
 
     switch (expr.operator.type) {
       case TokenType.MINUS:
+        this.checkNumberOperands(expr.operator.type, left, right);
         return left - right;
       case TokenType.PLUS:
         if (typeof left === "number" && typeof right === "number") {
@@ -42,22 +68,28 @@ export class Interpreter {
         if (typeof left === "string" && typeof right === "string") {
           return left + right;
         }
-        throw new Error(
-          `invalid operand with plus operator. Left: ${left} Right: ${right}`,
+        throw new RuntimeError(
+          `${expr.operator.type} operands must be both string or numbers`,
         );
       case TokenType.SLASH:
+        this.checkNumberOperands(expr.operator.type, left, right);
         return left / right;
       case TokenType.STAR:
+        this.checkNumberOperands(expr.operator.type, left, right);
         return left * right;
       case TokenType.GREATER:
+        this.checkNumberOperands(expr.operator.type, left, right);
         return left > right;
       case TokenType.GREATER_EQUAL:
+        this.checkNumberOperands(expr.operator.type, left, right);
         return left >= right;
       case TokenType.EQUAL:
         return left == right;
       case TokenType.LESS:
+        this.checkNumberOperands(expr.operator.type, left, right);
         return left < right;
       case TokenType.LESS_EQUAL:
+        this.checkNumberOperands(expr.operator.type, left, right);
         return left <= right;
       case TokenType.BANG_EQUAL:
         return left != right;
@@ -66,6 +98,11 @@ export class Interpreter {
       default:
         assertUnreachable(expr.operator.type);
     }
+  }
+
+  checkNumberOperands(operator: TokenType, left: unknown, right: unknown) {
+    if (typeof left === "number" && typeof right === "number") return;
+    throw new RuntimeError(`${operator} operands must be numbers`);
   }
 
   private evaluate(expr: Expr) {

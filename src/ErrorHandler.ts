@@ -1,5 +1,13 @@
+import type RuntimeError from "RuntimeError";
+
 class ErrorHandler {
+  public hadRuntimeError = false;
   public hadError = false;
+
+  runtimeError(error: RuntimeError) {
+    this.report({ line: error.token.line, message: error.message });
+    this.hadRuntimeError = true;
+  }
 
   error(line: number, message: string) {
     this.report({ line, message });

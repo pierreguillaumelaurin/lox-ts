@@ -27,6 +27,12 @@ export default class Lox {
     try {
       const data = fs.readFileSync(filePath, { encoding: "utf-8" });
       this.run(data);
+      if (this.errorHandler.hadError) {
+        process.exit(65);
+      }
+      if (this.errorHandler.hadRuntimeError) {
+        process.exit(70);
+      }
     } catch (error) {
       console.error("Error reading file:", error);
       process.exit(1);
