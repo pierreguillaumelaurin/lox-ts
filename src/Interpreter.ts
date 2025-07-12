@@ -7,7 +7,6 @@ import type {
 } from "Ast";
 import Lox from "Lox";
 import RuntimeError from "RuntimeError";
-import type { Token } from "Token";
 import TokenType from "TokenType";
 import { assertUnreachable } from "utils";
 
@@ -18,7 +17,7 @@ export class Interpreter {
       console.log(this.stringify(value));
     } catch (error) {
       if (error instanceof RuntimeError) {
-        Lox.runtimeError(error);
+        Lox.errorHandler.runtimeError(error);
       }
     }
   }
@@ -92,9 +91,9 @@ export class Interpreter {
         this.checkNumberOperands(expr.operator.type, left, right);
         return left <= right;
       case TokenType.BANG_EQUAL:
-        return left != right;
+        return !this.isEqual(left, right);
       case TokenType.EQUAL_EQUAL:
-        return left === right;
+        return this.isEqual(left, right);
       default:
         assertUnreachable(expr.operator.type);
     }
@@ -105,8 +104,26 @@ export class Interpreter {
     throw new RuntimeError(`${operator} operands must be numbers`);
   }
 
-  private evaluate(expr: Expr) {
-    return expr.accept(this);
+  private evaluate(expr: Expr): unknown {
+    switch (expr.type) {
+      case "BinaryExpr":
+        return this.visitBinaryExpr(expr);
+      case "GroupingExpr":
+        return this.visitGroupingExpr(expr);
+      case "LiteralExpr":
+        return this.visitLitteralExpr(expr);
+      case "UnaryExpr":
+        return this.visitUnaryExpr(expr);
+      case "VariableExpr":
+      case "AssignExpr":
+      case "LogicalExpr":
+      case "CallExpr":
+      case "GetExpr":
+      case "SetExpr":
+      case "ThisExpr":
+      case "SuperExpr":
+        throw new RuntimeError(`${expr.type} not implemented.`);
+    }
   }
 
   private isTruthy(value: unknown) {

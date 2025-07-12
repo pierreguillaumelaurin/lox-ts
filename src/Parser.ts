@@ -16,11 +16,7 @@ class Parser {
   }
 
   public parse() {
-    try {
-      return this.expression();
-    } catch (error) {
-      return error;
-    }
+    return this.expression();
   }
 
   private expression(): Expr {
@@ -93,11 +89,16 @@ class Parser {
   private primary() {
     if (this.match(TokenType.FALSE))
       return { type: "LiteralExpr", value: false } as LiteralExpr;
-    if (this.match(TokenType.TRUE)) return { type: "LiteralExpr", value: true } as LiteralExpr;
-    if (this.match(TokenType.NIL)) return { type: "LiteralExpr", value: null } as LiteralExpr;
+    if (this.match(TokenType.TRUE))
+      return { type: "LiteralExpr", value: true } as LiteralExpr;
+    if (this.match(TokenType.NIL))
+      return { type: "LiteralExpr", value: null } as LiteralExpr;
 
     if (this.match(TokenType.NUMBER, TokenType.STRING))
-      return { type: "LiteralExpr", value: this.previous().literal } as LiteralExpr;
+      return {
+        type: "LiteralExpr",
+        value: this.previous().literal,
+      } as LiteralExpr;
 
     if (this.match(TokenType.LEFT_PAREN)) {
       const expr = this.expression();

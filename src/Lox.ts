@@ -4,9 +4,11 @@ import { Scanner } from "./Scanner";
 import type { Token } from "Token";
 import Parser from "./Parser";
 import ErrorHandler from "ErrorHandler";
+import { Interpreter } from "Interpreter";
 
 export default class Lox {
-  private errorHandler: ErrorHandler;
+  public errorHandler: ErrorHandler;
+  private interpreter = new Interpreter();
 
   constructor() {
     this.errorHandler = new ErrorHandler();
@@ -65,9 +67,10 @@ export default class Lox {
     const parser = new Parser(tokens);
     const expression = parser.parse();
 
-    console.log(expression);
     if (this.errorHandler.hadError) {
       return;
     }
+
+    this.interpreter.interpret(expression);
   }
 }
