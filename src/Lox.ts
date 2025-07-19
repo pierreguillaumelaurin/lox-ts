@@ -1,14 +1,13 @@
 import * as fs from "fs";
 import * as readline from "readline";
 import { Scanner } from "./Scanner";
-import type { Token } from "Token";
 import Parser from "./Parser";
 import ErrorHandler from "ErrorHandler";
 import { Interpreter } from "Interpreter";
 
 export default class Lox {
-  public errorHandler: ErrorHandler;
   private interpreter = new Interpreter();
+  errorHandler: ErrorHandler;
 
   constructor() {
     this.errorHandler = new ErrorHandler();
