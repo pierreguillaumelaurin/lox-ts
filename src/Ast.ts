@@ -46,3 +46,52 @@ export type Expr =
   | SetExpr
   | ThisExpr
   | SuperExpr;
+
+export type ExprStmt = { type: "ExprStmt"; expression: Expr };
+export type PrintStmt = { type: "PrintStmt"; expression: Expr };
+export type VarStmt = {
+  type: "VarStmt";
+  name: Token;
+  initializer: Expr | null;
+};
+export type BlockStmt = { type: "BlockStmt"; statements: Stmt[] };
+export type ClassStmt = {
+  type: "ClassStmt";
+  name: Token;
+  superclass: VariableExpr | null;
+  methods: FunctionStmt[];
+};
+export type IfStmt = {
+  type: "IfStmt";
+  condition: Expr;
+  thenBranch: Stmt;
+  elseBranch: Stmt | null;
+};
+export type WhileStmt = {
+  type: "WhileStmt";
+  condition: Expr;
+  body: Stmt;
+};
+export type FunctionStmt = {
+  type: "FunctionStmt";
+  name: Token;
+  params: Token[];
+  body: Stmt[];
+};
+
+export type ReturnStmt = {
+  type: "ReturnStmt";
+  keyword: Token;
+  value: Expr | null;
+};
+
+export type Stmt =
+  | ExprStmt
+  | PrintStmt
+  | VarStmt
+  | BlockStmt
+  | IfStmt
+  | WhileStmt
+  | FunctionStmt
+  | ReturnStmt
+  | ClassStmt;

@@ -1,4 +1,4 @@
-import type { Expr, UnaryExpr, LiteralExpr, GroupingExpr } from "Ast";
+import type { Expr, LiteralExpr, GroupingExpr, Stmt, ExprStmt } from "Ast";
 import ErrorHandler from "ErrorHandler";
 import type { Token } from "Token";
 import TokenType from "TokenType";
@@ -16,7 +16,31 @@ class Parser {
   }
 
   public parse() {
-    return this.expression();
+    const statements: Stmt[] = [];
+
+    while (!this.isAtEnd()) {
+      statements.push(this.statement());
+    }
+
+    return statements;
+  }
+
+  private statement(): ExprStmt {
+    if (this.match(TokenType.PRINT)) return this.printStatement();
+
+    return this.expressionStatement();
+  }
+
+  private printStatement() {
+    const value = this.expression();
+    this.consume(TokenType.SEMICOLON, "Expect ';' after value");
+    return { type: "PrintStmt", expression: value };
+  }
+
+  private expressionStatement() {
+    const value = this.expression();
+    this.consume(TokenType.SEMICOLON, "Expect ';' after value");
+    return { type: "ExprStmt", expression: value };
   }
 
   private expression(): Expr {
