@@ -1,8 +1,10 @@
 import type {
   BinaryExpr,
   Expr,
+  ExprStmt,
   GroupingExpr,
   LiteralExpr,
+  Stmt,
   UnaryExpr,
 } from "Ast";
 import Lox from "Lox";
@@ -11,15 +13,20 @@ import TokenType from "TokenType";
 import { assertUnreachable } from "utils";
 
 export class Interpreter {
-  interpret(expr: Expr) {
+  interpret(statements: Stmt[]) {
     try {
-      const value = this.evaluate(expr);
-      console.log(this.stringify(value));
+      statements.forEach((statement) => {
+        this.execute(statement);
+      });
     } catch (error) {
       if (error instanceof RuntimeError) {
         Lox.errorHandler.runtimeError(error);
       }
     }
+  }
+
+  private execute(statement: Stmt) {
+    statement.accept(this);
   }
 
   private stringify(value: unknown) {
@@ -98,6 +105,17 @@ export class Interpreter {
       default:
         assertUnreachable(expr.operator.type);
     }
+  }
+
+  visitExpressionStatement(stmt: ExprStmt) {
+    this.evaluate(stmt.expression);
+    return null;
+  }
+
+  visitPrintStatement(stmt: ExprStmt) {
+    this.evaluate(stmt.expression);
+    console.log(stmt.expression.toString());
+    return null;
   }
 
   checkNumberOperands(operator: TokenType, left: unknown, right: unknown) {
