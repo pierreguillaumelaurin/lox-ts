@@ -1,4 +1,11 @@
-import type { Expr, LiteralExpr, GroupingExpr, Stmt, ExprStmt } from "Ast";
+import type {
+  Expr,
+  LiteralExpr,
+  GroupingExpr,
+  Stmt,
+  ExprStmt,
+  VarStmt,
+} from "Ast";
 import ErrorHandler from "ErrorHandler";
 import type { Token } from "Token";
 import TokenType from "TokenType";
@@ -19,11 +26,25 @@ class Parser {
     const statements: Stmt[] = [];
 
     while (!this.isAtEnd()) {
-      statements.push(this.statement());
+      statements.push(this.declaration());
     }
 
     return statements;
   }
+
+  private declaration(): DeclarationStatement {
+    try {
+      if (this.match(TokenType.VAR)) return this.varDeclaration();
+      return this.statement();
+    } catch (error) {
+      if (error instanceof ParseError) {
+        this.synchronize();
+        return null;
+      }
+    }
+  }
+
+  private varDeclaration(): VarStmt {}
 
   private statement(): ExprStmt {
     if (this.match(TokenType.PRINT)) return this.printStatement();
