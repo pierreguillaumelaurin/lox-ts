@@ -7,6 +7,8 @@ import type {
   VarStmt,
 } from "Ast";
 import ErrorHandler from "ErrorHandler";
+import ParseError from "ParseError";
+import RuntimeError from "RuntimeError";
 import type { Token } from "Token";
 import TokenType from "TokenType";
 
@@ -32,7 +34,7 @@ class Parser {
     return statements;
   }
 
-  private declaration(): DeclarationStatement {
+  private declaration() {
     try {
       if (this.match(TokenType.VAR)) return this.varDeclaration();
       return this.statement();
@@ -44,7 +46,22 @@ class Parser {
     }
   }
 
-  private varDeclaration(): VarStmt {}
+  private varDeclaration(): VarStmt {
+    const name = this.consume(TokenType.IDENTIFIER, "Expect variable name");
+
+    const initializer = this.match(TokenType.EQUAL) ? this.expression() : null;
+
+    this.consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
+
+    if (!name) {
+      throw new RuntimeError(
+        TokenType.VAR,
+        "Undefined variable name during variable declaration",
+      );
+    }
+
+    return { type: "VarStmt", name, initializer };
+  }
 
   private statement(): ExprStmt {
     if (this.match(TokenType.PRINT)) return this.printStatement();
@@ -143,7 +160,14 @@ class Parser {
       return {
         type: "LiteralExpr",
         value: this.previous().literal,
-      } as LiteralExpr;
+      };
+
+    if (this.match(TokenType.IDENTIFIER)) {
+      return {
+        type: "VariableExpr",
+        value: this.previous().literal,
+      };
+    }
 
     if (this.match(TokenType.LEFT_PAREN)) {
       const expr = this.expression();
