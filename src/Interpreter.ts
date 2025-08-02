@@ -1,18 +1,25 @@
 import type {
+  AssignExpr,
   BinaryExpr,
   Expr,
   ExprStmt,
   GroupingExpr,
   LiteralExpr,
+  PrintStmt,
   Stmt,
   UnaryExpr,
+  VariableExpr,
+  VarStmt,
 } from "Ast";
+import Environment from "Environment";
 import Lox from "Lox";
 import RuntimeError from "RuntimeError";
 import TokenType from "TokenType";
 import { assertUnreachable } from "utils";
 
 export class Interpreter {
+  private environment = new Environment();
+
   interpret(statements: Stmt[]) {
     try {
       statements.forEach((statement) => {
@@ -25,22 +32,53 @@ export class Interpreter {
     }
   }
 
-  private execute(statement: Stmt) {
-    statement.accept(this);
+  private execute(stmt: Stmt) {
+    switch (stmt.type) {
+      case "ExprStmt":
+        this.evaluate(stmt.expression);
+        break;
+      case "VarStmt":
+        this.executeVarStatement(stmt);
+        break;
+      case "PrintStmt":
+        this.executePrintStatement(stmt);
+        break;
+      default:
+        return;
+    }
   }
 
   private stringify(value: unknown) {
     return value == null ? "nil" : value.toString();
   }
 
-  visitLitteralExpr(expr: LiteralExpr) {
+  executeVarStatement(stmt: VarStmt) {
+    if (stmt.initializer == null) {
+      return;
+    }
+
+    const value = this.evaluate(stmt.initializer);
+    this.environment.define(stmt.name.lexeme, value);
+  }
+
+  executePrintStatement(stmt: PrintStmt) {
+    const value = this.evaluate(stmt.expression);
+    console.log(value ?? "nil");
+    return null;
+  }
+
+  evaluateVarExpr(expr: VariableExpr) {
+    return this.environment.get(expr.name);
+  }
+
+  evaluateLitteralExpr(expr: LiteralExpr) {
     return expr.value;
   }
-  visitGroupingExpr(expr: GroupingExpr) {
+  evaluateGroupingExpr(expr: GroupingExpr) {
     return this.evaluate(expr.expression);
   }
 
-  visitUnaryExpr(expr: UnaryExpr) {
+  evaluateUnaryExpr(expr: UnaryExpr) {
     const right = this.evaluate(expr.right);
 
     switch (expr.operator.type) {
@@ -54,12 +92,23 @@ export class Interpreter {
     }
   }
 
+  evaluateVariableExpr(expr: VariableExpr) {
+    return this.environment.get(expr.name);
+  }
+
+  evaluateAssignExpr(expr: AssignExpr) {
+    const value = this.evaluate(expr.value);
+
+    this.environment.assign(expr.name, value);
+    return value;
+  }
+
   checkNumberOperand(operator: TokenType, operand: unknown) {
     if (typeof operand === "number") return;
     throw new RuntimeError(operator, `${operator} operands must be a number`);
   }
 
-  visitBinaryExpr(expr: BinaryExpr) {
+  evaluateBinaryExpr(expr: BinaryExpr) {
     const left = this.evaluate(expr.left);
     const right = this.evaluate(expr.right);
 
@@ -107,14 +156,8 @@ export class Interpreter {
     }
   }
 
-  visitExpressionStatement(stmt: ExprStmt) {
+  evaluateExpressionStatement(stmt: ExprStmt) {
     this.evaluate(stmt.expression);
-    return null;
-  }
-
-  visitPrintStatement(stmt: ExprStmt) {
-    this.evaluate(stmt.expression);
-    console.log(stmt.expression.toString());
     return null;
   }
 
@@ -126,15 +169,17 @@ export class Interpreter {
   private evaluate(expr: Expr): unknown {
     switch (expr.type) {
       case "BinaryExpr":
-        return this.visitBinaryExpr(expr);
+        return this.evaluateBinaryExpr(expr);
       case "GroupingExpr":
-        return this.visitGroupingExpr(expr);
+        return this.evaluateGroupingExpr(expr);
       case "LiteralExpr":
-        return this.visitLitteralExpr(expr);
+        return this.evaluateLitteralExpr(expr);
       case "UnaryExpr":
-        return this.visitUnaryExpr(expr);
+        return this.evaluateUnaryExpr(expr);
       case "VariableExpr":
+        return this.evaluateVariableExpr(expr);
       case "AssignExpr":
+        return this.evaluateAssignExpr(expr);
       case "LogicalExpr":
       case "CallExpr":
       case "GetExpr":
