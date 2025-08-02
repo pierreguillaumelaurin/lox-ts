@@ -82,7 +82,25 @@ class Parser {
   }
 
   private expression(): Expr {
-    return this.equality();
+    return this.assignment();
+  }
+
+  private assignment(): Expr {
+    const expr = this.equality();
+
+    if (this.match(TokenType.EQUAL)) {
+      const previous = this.previous();
+      if (expr.type === "VariableExpr") {
+        return {
+          type: "AssignExpr",
+          name: expr.name,
+          value: this.assignment(),
+        };
+      }
+      this.error(previous, "Invalid assignment target");
+    }
+
+    return expr;
   }
 
   private equality() {
@@ -165,7 +183,7 @@ class Parser {
     if (this.match(TokenType.IDENTIFIER)) {
       return {
         type: "VariableExpr",
-        value: this.previous().literal,
+        name: this.previous(),
       };
     }
 
