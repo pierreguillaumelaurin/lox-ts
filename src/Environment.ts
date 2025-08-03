@@ -4,6 +4,11 @@ import TokenType from "TokenType";
 
 class Environment {
   private values: Record<string, unknown> = {};
+  enclosing?: Environment;
+
+  constructor(enclosing?: Environment) {
+    this.enclosing = enclosing;
+  }
 
   define(name: string, value: unknown) {
     this.values[name] = value;
@@ -14,21 +19,20 @@ class Environment {
       this.values[name.lexeme] = value;
       return;
     }
+    if (this.enclosing != null) {
+      return this.enclosing.get(name);
+    }
 
     throw new RuntimeError(TokenType.VAR, `Undefined variable ${name.lexeme}.`);
   }
 
-  get(name: Token) {
+  get(name: Token): unknown {
     const value = this.values[name.lexeme];
 
-    if (!value) {
-      throw new RuntimeError(
-        TokenType.VAR,
-        `Undefined variable ${name.lexeme}.`,
-      );
-    }
+    if (value) return value;
+    if (this.enclosing != null) return this.enclosing.get(name);
 
-    return value;
+    throw new RuntimeError(TokenType.VAR, `Undefined variable ${name.lexeme}.`);
   }
 }
 
