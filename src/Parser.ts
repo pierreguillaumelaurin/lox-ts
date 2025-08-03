@@ -64,7 +64,7 @@ class Parser {
     return { type: "VarStmt", name, initializer };
   }
 
-  private statement(): ExprStmt {
+  private statement(): Stmt {
     if (this.match(TokenType.PRINT)) return this.printStatement();
     if (this.match(TokenType.LEFT_BRACE)) return this.blockStatement();
 
@@ -85,7 +85,7 @@ class Parser {
     }
 
     this.consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
-    return statements;
+    return { type: "BlockStmt", statements };
   }
 
   private expressionStatement() {

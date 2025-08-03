@@ -44,6 +44,9 @@ export class Interpreter {
       case "PrintStmt":
         this.executePrintStatement(stmt);
         break;
+      case "BlockStmt":
+        this.executeBlockStatement(stmt);
+        break;
       default:
         return;
     }

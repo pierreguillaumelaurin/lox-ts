@@ -9,13 +9,15 @@
     "eslint": "^9.22.0",
     "globals": "^16.0.0",
     "prettier": "3.5.3",
-    "typescript-eslint": "^8.26.1"
+    "typescript-eslint": "^8.26.1",
+    "vitest": "^3.2.4"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "scripts": {
     "dev": "bun src/index.ts",
-    "lint:fix": "bun run eslint --fix && bun run prettier . --check --write"
+    "lint:fix": "bun run eslint --fix && bun run prettier . --check --write",
+    "test": "vitest"
   }
 }
