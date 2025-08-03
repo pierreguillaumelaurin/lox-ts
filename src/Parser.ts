@@ -66,6 +66,7 @@ class Parser {
 
   private statement(): ExprStmt {
     if (this.match(TokenType.PRINT)) return this.printStatement();
+    if (this.match(TokenType.LEFT_BRACE)) return this.blockStatement();
 
     return this.expressionStatement();
   }
@@ -74,6 +75,17 @@ class Parser {
     const value = this.expression();
     this.consume(TokenType.SEMICOLON, "Expect ';' after value");
     return { type: "PrintStmt", expression: value };
+  }
+
+  private blockStatement() {
+    const statements = [];
+
+    while (!this.check(TokenType.RIGHT_BRACE) && !this.isAtEnd()) {
+      statements.push(this.declaration());
+    }
+
+    this.consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
+    return statements;
   }
 
   private expressionStatement() {

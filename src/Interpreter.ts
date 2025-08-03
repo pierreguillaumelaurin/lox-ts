@@ -1,6 +1,7 @@
 import type {
   AssignExpr,
   BinaryExpr,
+  BlockStmt,
   Expr,
   ExprStmt,
   GroupingExpr,
@@ -65,6 +66,18 @@ export class Interpreter {
     const value = this.evaluate(stmt.expression);
     console.log(value ?? "nil");
     return null;
+  }
+
+  executeBlockStatement(stmt: BlockStmt) {
+    const previous = this.environment;
+    const current = new Environment(previous);
+    try {
+      this.environment = current;
+
+      stmt.statements.forEach((statement) => this.execute(statement));
+    } finally {
+      this.environment = previous;
+    }
   }
 
   evaluateVarExpr(expr: VariableExpr) {
