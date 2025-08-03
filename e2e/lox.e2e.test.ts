@@ -2,8 +2,9 @@
 import { describe, it, expect } from "vitest";
 import Lox from "../src/Lox";
 
+const lox = new Lox();
+
 const runLoxCode = (code: string): string[] => {
-  const lox = new Lox();
   const output: string[] = [];
   const originalLog = console.log;
   console.log = (...args: any[]) => {

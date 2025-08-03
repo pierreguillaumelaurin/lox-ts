@@ -23,7 +23,7 @@ class Environment {
       return this.enclosing.get(name);
     }
 
-    throw new RuntimeError(TokenType.VAR, `Undefined variable ${name.lexeme}.`);
+    throw new RuntimeError({ type: TokenType.VAR, lexeme: name.lexeme, literal: null, line: name.line }, `Undefined variable ${name.lexeme}.`);
   }
 
   get(name: Token): unknown {
@@ -32,7 +32,7 @@ class Environment {
     if (value) return value;
     if (this.enclosing != null) return this.enclosing.get(name);
 
-    throw new RuntimeError(TokenType.VAR, `Undefined variable ${name.lexeme}.`);
+    throw new RuntimeError({ type: TokenType.VAR, lexeme: name.lexeme, literal: null, line: name.line }, `Undefined variable ${name.lexeme}.`);
   }
 }
 

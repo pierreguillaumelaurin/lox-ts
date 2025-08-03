@@ -25,14 +25,14 @@ class Parser {
     this.errorHandler = new ErrorHandler();
   }
 
-  public parse() {
-    const statements: Stmt[] = [];
+  public parse(): Stmt[] {
+    const statements: (Stmt | null | undefined)[] = [];
 
     while (!this.isAtEnd()) {
       statements.push(this.declaration());
     }
 
-    return statements;
+    return statements.filter((statement) => statement != null) as Stmt[];
   }
 
   private declaration() {
@@ -56,7 +56,7 @@ class Parser {
 
     if (!name) {
       throw new RuntimeError(
-        TokenType.VAR,
+        { type: TokenType.VAR, lexeme: "var", literal: null, line: 0 },
         "Undefined variable name during variable declaration",
       );
     }
@@ -74,7 +74,7 @@ class Parser {
   private printStatement() {
     const value = this.expression();
     this.consume(TokenType.SEMICOLON, "Expect ';' after value");
-    return { type: "PrintStmt", expression: value };
+    return { type: "PrintStmt" as const, expression: value };
   }
 
   private blockStatement() {
@@ -85,13 +85,13 @@ class Parser {
     }
 
     this.consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
-    return { type: "BlockStmt", statements };
+    return { type: "BlockStmt" as const, statements: statements.filter(Boolean) as Stmt[] };
   }
 
   private expressionStatement() {
     const value = this.expression();
     this.consume(TokenType.SEMICOLON, "Expect ';' after value");
-    return { type: "ExprStmt", expression: value };
+    return { type: "ExprStmt" as const, expression: value };
   }
 
   private expression(): Expr {
@@ -179,7 +179,7 @@ class Parser {
     return this.primary();
   }
 
-  private primary() {
+  private primary(): Expr {
     if (this.match(TokenType.FALSE))
       return { type: "LiteralExpr", value: false } as LiteralExpr;
     if (this.match(TokenType.TRUE))
@@ -191,7 +191,7 @@ class Parser {
       return {
         type: "LiteralExpr",
         value: this.previous().literal,
-      };
+      } as LiteralExpr;
 
     if (this.match(TokenType.IDENTIFIER)) {
       return {

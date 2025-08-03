@@ -17,6 +17,7 @@ import Lox from "Lox";
 import RuntimeError from "RuntimeError";
 import TokenType from "TokenType";
 import { assertUnreachable } from "utils";
+import type { Token } from "./Token";
 
 export class Interpreter {
   private environment = new Environment();
@@ -99,12 +100,12 @@ export class Interpreter {
 
     switch (expr.operator.type) {
       case TokenType.MINUS:
-        this.checkNumberOperand(expr.operator.type, expr.right);
+        this.checkNumberOperand(expr.operator, right);
         return -(right as number);
       case TokenType.BANG:
         return !this.isTruthy(right);
       default:
-        assertUnreachable(expr.operator.type);
+        throw new RuntimeError(expr.operator, "Invalid unary operator.");
     }
   }
 
@@ -119,9 +120,9 @@ export class Interpreter {
     return value;
   }
 
-  checkNumberOperand(operator: TokenType, operand: unknown) {
+  checkNumberOperand(operator: Token, operand: unknown) {
     if (typeof operand === "number") return;
-    throw new RuntimeError(operator, `${operator} operands must be a number`);
+    throw new RuntimeError(operator, `${operator.type} operands must be a number`);
   }
 
   evaluateBinaryExpr(expr: BinaryExpr) {
@@ -130,7 +131,7 @@ export class Interpreter {
 
     switch (expr.operator.type) {
       case TokenType.MINUS:
-        this.checkNumberOperands(expr.operator.type, left, right);
+        this.checkNumberOperands(expr.operator, left, right);
         return (left as number) - (right as number);
       case TokenType.PLUS:
         if (typeof left === "number" && typeof right === "number") {
@@ -140,35 +141,35 @@ export class Interpreter {
           return left + right;
         }
         throw new RuntimeError(
-          expr.operator.type,
+          expr.operator,
           `${expr.operator.type} operands must be both string or numbers`,
         );
       case TokenType.SLASH:
-        this.checkNumberOperands(expr.operator.type, left, right);
+        this.checkNumberOperands(expr.operator, left, right);
         return (left as number) / (right as number);
       case TokenType.STAR:
-        this.checkNumberOperands(expr.operator.type, left, right);
+        this.checkNumberOperands(expr.operator, left, right);
         return (left as number) * (right as number);
       case TokenType.GREATER:
-        this.checkNumberOperands(expr.operator.type, left, right);
+        this.checkNumberOperands(expr.operator, left, right);
         return (left as number) > (right as number);
       case TokenType.GREATER_EQUAL:
-        this.checkNumberOperands(expr.operator.type, left, right);
+        this.checkNumberOperands(expr.operator, left, right);
         return (left as number) >= (right as number);
       case TokenType.EQUAL:
         return left == right;
       case TokenType.LESS:
-        this.checkNumberOperands(expr.operator.type, left, right);
+        this.checkNumberOperands(expr.operator, left, right);
         return (left as number) < (right as number);
       case TokenType.LESS_EQUAL:
-        this.checkNumberOperands(expr.operator.type, left, right);
+        this.checkNumberOperands(expr.operator, left, right);
         return (left as number) <= (right as number);
       case TokenType.BANG_EQUAL:
         return !this.isEqual(left, right);
       case TokenType.EQUAL_EQUAL:
         return this.isEqual(left, right);
       default:
-        assertUnreachable(expr.operator.type);
+        throw new RuntimeError(expr.operator, "Invalid binary operator.");
     }
   }
 
@@ -177,9 +178,9 @@ export class Interpreter {
     return null;
   }
 
-  checkNumberOperands(operator: TokenType, left: unknown, right: unknown) {
+  checkNumberOperands(operator: Token, left: unknown, right: unknown) {
     if (typeof left === "number" && typeof right === "number") return;
-    throw new RuntimeError(operator, `${operator} operands must be numbers`);
+    throw new RuntimeError(operator, `${operator.type} operands must be numbers`);
   }
 
   private evaluate(expr: Expr): unknown {
@@ -202,7 +203,7 @@ export class Interpreter {
       case "SetExpr":
       case "ThisExpr":
       case "SuperExpr":
-        throw new RuntimeError(`${expr.type} not implemented.`);
+        throw new RuntimeError({ type: TokenType.EOF, lexeme: "", literal: null, line: 0 }, `${expr.type} not implemented.`);
     }
   }
 

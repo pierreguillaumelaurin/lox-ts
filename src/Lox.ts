@@ -7,10 +7,10 @@ import { Interpreter } from "Interpreter";
 
 export default class Lox {
   private interpreter = new Interpreter();
-  errorHandler: ErrorHandler;
+  static errorHandler: ErrorHandler;
 
   constructor() {
-    this.errorHandler = new ErrorHandler();
+    Lox.errorHandler = new ErrorHandler();
   }
 
   main(args: string[]) {
@@ -28,10 +28,10 @@ export default class Lox {
     try {
       const data = fs.readFileSync(filePath, { encoding: "utf-8" });
       this.run(data);
-      if (this.errorHandler.hadError) {
+      if (Lox.errorHandler.hadError) {
         process.exit(65);
       }
-      if (this.errorHandler.hadRuntimeError) {
+      if (Lox.errorHandler.hadRuntimeError) {
         process.exit(70);
       }
     } catch (error) {
@@ -51,7 +51,7 @@ export default class Lox {
 
     rl.on("line", (line) => {
       this.run(line);
-      this.errorHandler.hadError = false;
+      Lox.errorHandler.hadError = false;
       rl.prompt();
     }).on("close", () => {
       console.log("Goodbye!");
@@ -59,14 +59,14 @@ export default class Lox {
     });
   }
 
-  private run(source: string): void {
-    const scanner = new Scanner(source, this.errorHandler);
+  run(source: string): void {
+    const scanner = new Scanner(source, Lox.errorHandler);
     const tokens = scanner.scanTokens();
 
     const parser = new Parser(tokens);
     const expression = parser.parse();
 
-    if (this.errorHandler.hadError) {
+    if (Lox.errorHandler.hadError) {
       return;
     }
 

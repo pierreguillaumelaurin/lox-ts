@@ -1,8 +1,8 @@
-import type TokenType from "TokenType";
+import type { Token } from "./Token";
 
 class RuntimeError extends Error {
-  token: TokenType;
-  constructor(token: TokenType, message: string) {
+  token: Token;
+  constructor(token: Token, message: string) {
     super(message);
     Object.setPrototypeOf(this, RuntimeError.prototype);
     this.token = token;
