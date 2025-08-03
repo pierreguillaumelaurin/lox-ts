@@ -5,6 +5,7 @@ import type {
   Expr,
   ExprStmt,
   GroupingExpr,
+  IfStmt,
   LiteralExpr,
   PrintStmt,
   Stmt,
@@ -16,7 +17,6 @@ import Environment from "Environment";
 import Lox from "Lox";
 import RuntimeError from "RuntimeError";
 import TokenType from "TokenType";
-import { assertUnreachable } from "utils";
 import type { Token } from "./Token";
 
 export class Interpreter {
@@ -42,6 +42,9 @@ export class Interpreter {
       case "VarStmt":
         this.executeVarStatement(stmt);
         break;
+      case "IfStmt":
+        this.executeIfStatement(stmt);
+        break;
       case "PrintStmt":
         this.executePrintStatement(stmt);
         break;
@@ -64,6 +67,15 @@ export class Interpreter {
 
     const value = this.evaluate(stmt.initializer);
     this.environment.define(stmt.name.lexeme, value);
+  }
+
+  executeIfStatement({ condition, thenBranch, elseBranch }: IfStmt) {
+    if (this.isTruthy(this.evaluate(condition))) {
+      this.execute(thenBranch);
+    }
+    if (elseBranch != null) {
+      this.execute(elseBranch);
+    }
   }
 
   executePrintStatement(stmt: PrintStmt) {
@@ -122,7 +134,10 @@ export class Interpreter {
 
   checkNumberOperand(operator: Token, operand: unknown) {
     if (typeof operand === "number") return;
-    throw new RuntimeError(operator, `${operator.type} operands must be a number`);
+    throw new RuntimeError(
+      operator,
+      `${operator.type} operands must be a number`,
+    );
   }
 
   evaluateBinaryExpr(expr: BinaryExpr) {
@@ -180,7 +195,10 @@ export class Interpreter {
 
   checkNumberOperands(operator: Token, left: unknown, right: unknown) {
     if (typeof left === "number" && typeof right === "number") return;
-    throw new RuntimeError(operator, `${operator.type} operands must be numbers`);
+    throw new RuntimeError(
+      operator,
+      `${operator.type} operands must be numbers`,
+    );
   }
 
   private evaluate(expr: Expr): unknown {
@@ -203,7 +221,10 @@ export class Interpreter {
       case "SetExpr":
       case "ThisExpr":
       case "SuperExpr":
-        throw new RuntimeError({ type: TokenType.EOF, lexeme: "", literal: null, line: 0 }, `${expr.type} not implemented.`);
+        throw new RuntimeError(
+          { type: TokenType.EOF, lexeme: "", literal: null, line: 0 },
+          `${expr.type} not implemented.`,
+        );
     }
   }
 
