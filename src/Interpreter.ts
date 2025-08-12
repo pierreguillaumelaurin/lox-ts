@@ -7,16 +7,17 @@ import type {
   GroupingExpr,
   IfStmt,
   LiteralExpr,
+  LogicalExpr,
   PrintStmt,
   Stmt,
   UnaryExpr,
   VariableExpr,
   VarStmt,
-} from "Ast";
-import Environment from "Environment";
-import Lox from "Lox";
-import RuntimeError from "RuntimeError";
-import TokenType from "TokenType";
+} from "./Ast";
+import Environment from "./Environment";
+import Lox from "./Lox";
+import RuntimeError from "./RuntimeError";
+import TokenType from "./TokenType";
 import type { Token } from "./Token";
 
 export class Interpreter {
@@ -94,6 +95,18 @@ export class Interpreter {
     } finally {
       this.environment = previous;
     }
+  }
+
+  evaluateLogicalExpr(expr: LogicalExpr) {
+    const left = this.evaluate(expr.left);
+
+    if (expr.operator.type === TokenType.OR) {
+      if (this.isTruthy(left)) return left;
+    } else { // TokenType.AND
+      if (!this.isTruthy(left)) return left;
+    }
+
+    return this.evaluate(expr.right);
   }
 
   evaluateVarExpr(expr: VariableExpr) {
@@ -216,6 +229,7 @@ export class Interpreter {
       case "AssignExpr":
         return this.evaluateAssignExpr(expr);
       case "LogicalExpr":
+        return this.evaluateLogicalExpr(expr);
       case "CallExpr":
       case "GetExpr":
       case "SetExpr":

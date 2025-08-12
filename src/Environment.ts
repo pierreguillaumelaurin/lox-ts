@@ -1,6 +1,6 @@
-import RuntimeError from "RuntimeError";
-import type { Token } from "Token";
-import TokenType from "TokenType";
+import RuntimeError from "./RuntimeError";
+import type { Token } from "./Token";
+import TokenType from "./TokenType";
 
 class Environment {
   private values: Record<string, unknown> = {};

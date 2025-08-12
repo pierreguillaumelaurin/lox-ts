@@ -1,6 +1,6 @@
-import type { Token } from "Token";
-import TokenType from "TokenType";
-import ErrorHandler from "ErrorHandler";
+import type { Token } from "./Token";
+import TokenType from "./TokenType";
+import ErrorHandler from "./ErrorHandler";
 
 export class Scanner {
   private errorHandler: ErrorHandler;

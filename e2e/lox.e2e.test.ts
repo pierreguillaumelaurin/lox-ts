@@ -69,4 +69,28 @@ describe("Lox E2E", () => {
       "global c",
     ]);
   });
+
+  it("should handle logical expressions", () => {
+    const code = `
+      print true and false;
+      print true or false;
+      print false or true;
+      print false and true;
+      print 1 and 2;
+      print nil and 2;
+      print 1 or 2;
+      print nil or 2;
+    `;
+    const output = runLoxCode(code);
+    expect(output).toEqual([
+      "false",
+      "true",
+      "true",
+      "false",
+      "2",
+      "nil",
+      "1",
+      "2",
+    ]);
+  });
 });

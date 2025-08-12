@@ -2,8 +2,8 @@ import * as fs from "fs";
 import * as readline from "readline";
 import { Scanner } from "./Scanner";
 import Parser from "./Parser";
-import ErrorHandler from "ErrorHandler";
-import { Interpreter } from "Interpreter";
+import ErrorHandler from "./ErrorHandler";
+import { Interpreter } from "./Interpreter";
 
 export default class Lox {
   private interpreter = new Interpreter();

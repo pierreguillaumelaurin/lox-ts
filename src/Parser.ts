@@ -6,12 +6,13 @@ import type {
   ExprStmt,
   VarStmt,
   AssignExpr,
-} from "Ast";
-import ErrorHandler from "ErrorHandler";
-import ParseError from "ParseError";
-import RuntimeError from "RuntimeError";
-import type { Token } from "Token";
-import TokenType from "TokenType";
+  LogicalExpr,
+} from "./Ast";
+import ErrorHandler from "./ErrorHandler";
+import ParseError from "./ParseError";
+import RuntimeError from "./RuntimeError";
+import type { Token } from "./Token";
+import TokenType from "./TokenType";
 
 const EOF_TOKEN = { type: TokenType.EOF, lexeme: "", literal: null, line: 0 };
 
@@ -114,7 +115,7 @@ class Parser {
   }
 
   private assignment(): Expr {
-    const expr = this.equality();
+    const expr = this.or();
 
     if (this.match(TokenType.EQUAL)) {
       const previous = this.previous();
@@ -126,6 +127,30 @@ class Parser {
         } as AssignExpr;
       }
       this.error(previous, "Invalid assignment target");
+    }
+
+    return expr;
+  }
+
+  private or(): Expr {
+    let expr = this.and();
+
+    while (this.match(TokenType.OR)) {
+      const operator = this.previous();
+      const right = this.and();
+      expr = { type: "LogicalExpr", left: expr, operator, right };
+    }
+
+    return expr;
+  }
+
+  private and(): Expr {
+    let expr = this.equality();
+
+    while (this.match(TokenType.AND)) {
+      const operator = this.previous();
+      const right = this.equality();
+      expr = { type: "LogicalExpr", left: expr, operator, right };
     }
 
     return expr;
