@@ -100,13 +100,12 @@ export class Interpreter {
   evaluateLogicalExpr(expr: LogicalExpr) {
     const left = this.evaluate(expr.left);
 
-    if (expr.operator.type === TokenType.OR) {
-      if (this.isTruthy(left)) return left;
-    } else { // TokenType.AND
-      if (!this.isTruthy(left)) return left;
-    }
-
-    return this.evaluate(expr.right);
+    const isOrShortCircuit =
+      expr.operator.type === TokenType.OR && this.isTruthy(left);
+    const isAndShortCircuit =
+      expr.operator.type === TokenType.AND && !this.isTruthy(left);
+    const isShortCircuit = isOrShortCircuit || isAndShortCircuit;
+    return isShortCircuit ? left : this.evaluate(expr.right);
   }
 
   evaluateVarExpr(expr: VariableExpr) {
