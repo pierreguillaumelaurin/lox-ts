@@ -3,10 +3,8 @@ import type {
   LiteralExpr,
   GroupingExpr,
   Stmt,
-  ExprStmt,
   VarStmt,
   AssignExpr,
-  LogicalExpr,
 } from "./Ast";
 import ErrorHandler from "./ErrorHandler";
 import ParseError from "./ParseError";
@@ -69,8 +67,66 @@ class Parser {
     if (this.match(TokenType.IF)) return this.ifStatement();
     if (this.match(TokenType.PRINT)) return this.printStatement();
     if (this.match(TokenType.LEFT_BRACE)) return this.blockStatement();
+    if (this.match(TokenType.WHILE)) return this.whileStatement();
+    if (this.match(TokenType.FOR)) return this.forStatement();
 
     return this.expressionStatement();
+  }
+
+  private forStatement(): Stmt {
+    let initializer;
+    if (this.match(TokenType.SEMICOLON)) {
+      initializer = null;
+    } else if (this.match(TokenType.VAR)) {
+      initializer = this.varDeclaration();
+    } else {
+      initializer = this.expressionStatement();
+    }
+
+    let condition = null;
+    if (!this.check(TokenType.SEMICOLON)) {
+      condition = this.expression();
+    }
+    this.consume(TokenType.SEMICOLON, "Expect ';' after loop condition.");
+
+    let increment = null;
+    if (!this.check(TokenType.RIGHT_PAREN)) {
+      increment = this.expression();
+    }
+
+    this.consume(TokenType.RIGHT_PAREN, "Expect ')' after for clauses.");
+
+    let body = this.statement();
+
+    if (increment != null) {
+      body = {
+        type: "BlockStmt" as const,
+        statements: [body, { type: "ExprStmt", expression: increment }],
+      };
+    }
+
+    if (condition == null) {
+      condition = { type: "LiteralExpr" as const, value: true };
+    }
+    body = { type: "WhileStmt", condition, body };
+
+    if (initializer != null) {
+      body = {
+        type: "BlockStmt" as const,
+        statements: [initializer, body],
+      };
+    }
+
+    return body;
+  }
+
+  private whileStatement(): Stmt {
+    this.consume(TokenType.LEFT_PAREN, "Expect '(' after 'while'.");
+    const condition = this.expression();
+    this.consume(TokenType.RIGHT_PAREN, "Expect ')' after if condition.");
+    const body = this.statement();
+
+    return { type: "WhileStmt" as const, condition, body };
   }
 
   private ifStatement() {

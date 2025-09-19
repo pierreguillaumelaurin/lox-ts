@@ -13,6 +13,7 @@ import type {
   UnaryExpr,
   VariableExpr,
   VarStmt,
+  WhileStmt,
 } from "./Ast";
 import Environment from "./Environment";
 import Lox from "./Lox";
@@ -52,6 +53,9 @@ export class Interpreter {
       case "BlockStmt":
         this.executeBlockStatement(stmt);
         break;
+      case "WhileStmt":
+        this.executeWhileStatement(stmt);
+        break;
       default:
         return;
     }
@@ -79,10 +83,15 @@ export class Interpreter {
     }
   }
 
+  executeWhileStatement({ condition, body }: WhileStmt) {
+    while (this.isTruthy(this.evaluate(condition))) {
+      this.execute(body);
+    }
+  }
+
   executePrintStatement(stmt: PrintStmt) {
     const value = this.evaluate(stmt.expression);
     console.log(value ?? "nil");
-    return null;
   }
 
   executeBlockStatement(stmt: BlockStmt) {

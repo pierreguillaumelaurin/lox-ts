@@ -93,4 +93,16 @@ describe("Lox E2E", () => {
       "2",
     ]);
   });
+
+  it("should handle while loops", () => {
+    const code = `
+      var i = 0;
+      while (i < 3) {
+        print i;
+        i = i + 1;
+      }
+    `;
+    const output = runLoxCode(code);
+    expect(output).toEqual(["0", "1", "2"]);
+  });
 });
