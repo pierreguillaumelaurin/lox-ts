@@ -20,16 +20,18 @@ class Environment {
       return;
     }
     if (this.enclosing != null) {
-      return this.enclosing.get(name);
+      this.enclosing.assign(name, value);
+      return;
     }
 
     throw new RuntimeError({ type: TokenType.VAR, lexeme: name.lexeme, literal: null, line: name.line }, `Undefined variable ${name.lexeme}.`);
   }
 
   get(name: Token): unknown {
-    const value = this.values[name.lexeme];
+    if (name.lexeme in this.values) {
+      return this.values[name.lexeme];
+    }
 
-    if (value) return value;
     if (this.enclosing != null) return this.enclosing.get(name);
 
     throw new RuntimeError({ type: TokenType.VAR, lexeme: name.lexeme, literal: null, line: name.line }, `Undefined variable ${name.lexeme}.`);

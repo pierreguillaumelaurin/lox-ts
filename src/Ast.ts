@@ -10,7 +10,7 @@ export type GroupingExpr = { type: "GroupingExpr"; expression: Expr };
 export type CallExpr = {
   type: "CallExpr";
   callee: Expr;
-  paren: Token;
+  paren?: Token;
   arguments: Expr[];
 };
 export type LiteralExpr = { type: "LiteralExpr"; value: unknown };

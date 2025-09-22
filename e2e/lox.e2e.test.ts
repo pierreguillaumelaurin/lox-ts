@@ -105,4 +105,14 @@ describe("Lox E2E", () => {
     const output = runLoxCode(code);
     expect(output).toEqual(["0", "1", "2"]);
   });
+
+  it("should handle for loops", () => {
+    const code = `
+      for (var i = 0; i < 3; i = i + 1) {
+        print i;
+      }
+    `;
+    const output = runLoxCode(code);
+    expect(output).toEqual(["0", "1", "2"]);
+  });
 });

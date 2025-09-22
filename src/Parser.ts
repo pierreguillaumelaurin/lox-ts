@@ -74,6 +74,8 @@ class Parser {
   }
 
   private forStatement(): Stmt {
+    this.consume(TokenType.LEFT_PAREN, "Expect '(' after 'for'.");
+
     let initializer;
     if (this.match(TokenType.SEMICOLON)) {
       initializer = null;
@@ -135,7 +137,10 @@ class Parser {
     this.consume(TokenType.RIGHT_PAREN, "Expect ')' after if condition.");
 
     const thenBranch = this.statement();
-    const elseBranch = this.match(TokenType.ELSE) ?? null;
+    let elseBranch = null;
+    if (this.match(TokenType.ELSE)) {
+      elseBranch = this.statement();
+    }
 
     return { type: "IfStmt" as const, condition, thenBranch, elseBranch };
   }
@@ -272,7 +277,37 @@ class Parser {
       return { type: "UnaryExpr", operator, right };
     }
 
-    return this.primary();
+    return this.call();
+  }
+
+  private call(): Expr {
+    let expr = this.primary();
+
+    while (true) {
+      if (this.match(TokenType.LEFT_PAREN)) {
+        expr = this.finishCall(expr);
+      } else {
+        break;
+      }
+    }
+
+    return expr;
+  }
+
+  private finishCall(callee: Expr): Expr {
+    const args = [];
+    if (!this.check(TokenType.RIGHT_PAREN)) {
+      do {
+        args.push(this.expression());
+      } while (this.match(TokenType.COMMA));
+    }
+
+    const paren = this.consume(
+      TokenType.RIGHT_PAREN,
+      "Expect ')' after arguments",
+    );
+
+    return { type: "CallExpr", callee, paren, arguments: args };
   }
 
   private primary(): Expr {
