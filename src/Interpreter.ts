@@ -2,6 +2,7 @@ import type {
   AssignExpr,
   BinaryExpr,
   BlockStmt,
+  CallExpr,
   Expr,
   ExprStmt,
   GroupingExpr,
@@ -20,6 +21,7 @@ import Lox from "./Lox";
 import RuntimeError from "./RuntimeError";
 import TokenType from "./TokenType";
 import type { Token } from "./Token";
+import type { LoxCallable } from "LoxCallable";
 
 export class Interpreter {
   private environment = new Environment();
@@ -239,6 +241,7 @@ export class Interpreter {
       case "LogicalExpr":
         return this.evaluateLogicalExpr(expr);
       case "CallExpr":
+        return this.evaluateCallExpr(expr);
       case "GetExpr":
       case "SetExpr":
       case "ThisExpr":
@@ -248,6 +251,26 @@ export class Interpreter {
           `${expr.type} not implemented.`,
         );
     }
+  }
+
+  private evaluateCallExpr(expr: CallExpr): unknown {
+    const callee = this.evaluate(expr.callee) as LoxCallable;
+    if (!(callee instanceof LoxFunction)) {
+      throw new RuntimeError(expr.paren, "Can only call functions and classes");
+    }
+
+    if (expr.args.length != callee.arity) {
+      throw new RuntimeError(
+        expr.paren,
+        `Expected ${callee.arity} arguments but got ${args.length}.`,
+      );
+    }
+    const args = [];
+    for (const argument of expr.arguments) {
+      args.push(this.evaluate(argument));
+    }
+
+    return callee.call(this, args);
   }
 
   private isTruthy(value: unknown) {
